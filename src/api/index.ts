@@ -18,23 +18,23 @@ export const clientsApi = {
 };
 
 export const suppliersApi = {
-  ...createCrudApi('suppliers'),
+  ...createCrudApi('fournisseurs'),
 
   getProducts: (id: string) =>
-      api.get(`/suppliers/${id}/products`).then(r => r.data),
+      api.get(`/fournisseurs/${id}/products`).then(r => r.data),
 
   addProduct: (id: string, productId: string) =>
-      api.post(`/suppliers/${id}/products`, { productId }).then(r => r.data),
+      api.post(`/fournisseurs/${id}/products`, { productId }).then(r => r.data),
 
 
   getPurchases: (fournisseurId: string, userId: string, params?: any) =>
       api
-          .get(`/suppliers/userId/${userId}/fournisseurId/${fournisseurId}/purchases`, { params })
+          .get(`/fournisseurs/userId/${userId}/fournisseurId/${fournisseurId}/purchases`, { params })
           .then(r => r.data),
 
   exportBilan: (id: string, params?: any) =>
       api
-          .get(`/suppliers/${id}/export`, { params, responseType: 'blob' })
+          .get(`/fournisseurs/${id}/export`, { params, responseType: 'blob' })
           .then(r => r.data),
 };
 

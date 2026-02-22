@@ -10,6 +10,7 @@ import ChangePasswordPage from './pages/auth/ChangePasswordPage';
 
 const DashboardPage = lazy(() => import('./pages/dashboard/DashboardPage'));
 const ClientsPage = lazy(() => import('./pages/clients/ClientsPage'));
+const ClientDetailPage = lazy(() => import('./pages/clients/ClientDetailPage'));
 const SuppliersPage = lazy(() => import('./pages/suppliers/SuppliersPage'));
 const ProductsPage = lazy(() => import('./pages/products/ProductsPage'));
 const SalesPage = lazy(() => import('./pages/sales/SalesPage'));
@@ -63,6 +64,7 @@ const App: React.FC = () => (
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="clients" element={<ClientsPage />} />
+              <Route path="clients/:clientId" element={<ClientDetailPage />} />
               <Route path="suppliers" element={<SuppliersPage />} />
               <Route path="products" element={<ProductsPage />} />
               <Route path="sales" element={<SalesPage />} />
