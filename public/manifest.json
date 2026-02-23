@@ -1,0 +1,23 @@
+{
+  "short_name": "KY-Pro ERP",
+  "name": "KY-Pro ERP - Gestion d'entreprise",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#1E3A8A",
+  "background_color": "#ffffff",
+  "orientation": "portrait"
+}

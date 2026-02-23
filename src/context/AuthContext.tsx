@@ -41,7 +41,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [token]);
 
   const login = useCallback(async (email: string, password: string): Promise<User> => {
+    console.log(process.env.REACT_APP_API_URL)
+
     const data = await authApi.login({ email, password });
+
     localStorage.setItem('erp_token', data.access_token);
     localStorage.setItem('erp_user', JSON.stringify(data.user));
     setToken(data.access_token);
