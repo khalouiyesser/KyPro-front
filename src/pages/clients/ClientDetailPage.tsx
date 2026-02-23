@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';    // ← ajout
 import { useQuery } from '@tanstack/react-query';
 import { clientsApi } from '../../api';
@@ -43,6 +43,17 @@ const ClientDetailPage: React.FC = () => {
     queryFn:  () => clientsApi.getStats(clientId!),
     enabled:  !!clientId,
   });
+
+  // Réinitialiser les états quand le clientId change
+  useEffect(() => {
+    setSelectedSale(null);
+    setExportStartDate('');
+    setExportEndDate('');
+    setExportQuick('');
+    setFilterStartDate('');
+    setFilterEndDate('');
+    setFilterQuick('');
+  }, [clientId]);
 
   // ── Filtrage local des achats par date ───────────────────────────────────────
   const filteredSales = useMemo(() => {

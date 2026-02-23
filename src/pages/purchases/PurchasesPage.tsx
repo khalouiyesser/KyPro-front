@@ -175,9 +175,23 @@ const PurchasesPage: React.FC = () => {
                               {(form.supplierId ? supplierProducts : (allProducts as any[])).map((p: any) => <option key={p._id} value={p._id}>{p.name}</option>)}
                             </select>
                           </td>
-                          <td className="pr-1 py-1"><input type="number" min={1} value={item.quantity} onChange={e => setForm(f => ({ ...f, items: f.items.map((x, j) => j === i ? { ...x, quantity: +e.target.value } : x) }))} className="w-full px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-xs focus:outline-none" /></td>
-                          <td className="pr-1 py-1"><input type="number" min={0} step={0.001} value={item.unitPrice} onChange={e => setForm(f => ({ ...f, items: f.items.map((x, j) => j === i ? { ...x, unitPrice: +e.target.value } : x) }))} className="w-full px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-xs focus:outline-none" /></td>
-                          <td className="pr-1 py-1"><input type="number" min={0} value={item.tva} onChange={e => setForm(f => ({ ...f, items: f.items.map((x, j) => j === i ? { ...x, tva: +e.target.value } : x) }))} className="w-full px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-xs focus:outline-none" /></td>
+                          <td className="pr-1 py-1">
+                            <input type="number" min={1} value={item.quantity}
+                                   onChange={e => setForm(f => ({ ...f, items: f.items.map((x, j) => j === i ? { ...x, quantity: +e.target.value } : x) }))}
+                                   className="w-full px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-xs text-gray-900 dark:text-white focus:outline-none" />
+                          </td>
+
+                          <td className="pr-1 py-1">
+                            <input type="number" min={0} step={0.001} value={item.unitPrice}
+                                   onChange={e => setForm(f => ({ ...f, items: f.items.map((x, j) => j === i ? { ...x, unitPrice: +e.target.value } : x) }))}
+                                   className="w-full px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-xs text-gray-900 dark:text-white focus:outline-none" />
+                          </td>
+
+                          <td className="pr-1 py-1">
+                            <input type="number" min={0} value={item.tva}
+                                   onChange={e => setForm(f => ({ ...f, items: f.items.map((x, j) => j === i ? { ...x, tva: +e.target.value } : x) }))}
+                                   className="w-full px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-xs text-gray-900 dark:text-white focus:outline-none" />
+                          </td>
                           <td className="text-right py-1 text-gray-600 dark:text-gray-300">{(item.quantity * item.unitPrice * (1 + item.tva / 100)).toFixed(3)}</td>
                           <td>{form.items.length > 1 && <button type="button" onClick={() => setForm(f => ({ ...f, items: f.items.filter((_, j) => j !== i) }))} className="text-red-400 hover:text-red-600 ml-1">✕</button>}</td>
                         </tr>

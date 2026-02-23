@@ -7,11 +7,14 @@ import { ThemeProvider } from './context/ThemeContext';
 import Layout from './components/layout/Layout';
 import LoginPage from './pages/auth/LoginPage';
 import ChangePasswordPage from './pages/auth/ChangePasswordPage';
+// import SupplierDetailPage from "./pages/suppliers/Supplierdetailpage";
 
 const DashboardPage = lazy(() => import('./pages/dashboard/DashboardPage'));
 const ClientsPage = lazy(() => import('./pages/clients/ClientsPage'));
 const ClientDetailPage = lazy(() => import('./pages/clients/ClientDetailPage'));
 const SuppliersPage = lazy(() => import('./pages/suppliers/SuppliersPage'));
+const SupplierDetailPage = lazy(() => import('./pages/suppliers/Supplierdetailpage'));
+
 const ProductsPage = lazy(() => import('./pages/products/ProductsPage'));
 const SalesPage = lazy(() => import('./pages/sales/SalesPage'));
 const PurchasesPage = lazy(() => import('./pages/purchases/PurchasesPage'));
@@ -66,6 +69,7 @@ const App: React.FC = () => (
               <Route path="clients" element={<ClientsPage />} />
               <Route path="clients/:clientId" element={<ClientDetailPage />} />
               <Route path="suppliers" element={<SuppliersPage />} />
+              <Route path="suppliers/:supplierId" element={<SupplierDetailPage />} />
               <Route path="products" element={<ProductsPage />} />
               <Route path="sales" element={<SalesPage />} />
               <Route path="purchases" element={<PurchasesPage />} />
