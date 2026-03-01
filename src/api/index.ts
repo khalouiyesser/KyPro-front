@@ -59,7 +59,7 @@ export const purchasesApi = {
 };
 
 export const stockApi = {
-  getMovements: (params?: any) => api.get('/stock/movements', { params }).then(r => r.data),
+  getMovements: (params?: any) => api.get('/stock', { params }).then(r => r.data),
   getAlerts: () => api.get('/stock/alerts').then(r => r.data),
   adjust: (data: any) => api.post('/stock/adjust', data).then(r => r.data),
   updateThreshold: (productId: string, threshold: number) => api.patch(`/stock/threshold/${productId}`, { threshold }).then(r => r.data),
