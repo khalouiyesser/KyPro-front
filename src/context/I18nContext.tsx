@@ -61,22 +61,63 @@ const translations: Record<Lang, Record<string, string>> = {
     'common.reset': 'Réinitialiser',
     'common.period': 'Période',
 
-    // Dashboard
-    'dashboard.title': 'Tableau de bord',
-    'dashboard.totalRevenue': 'CA Total',
-    'dashboard.monthRevenue': 'CA Ce mois',
-    'dashboard.totalPurchases': 'Achats Total',
-    'dashboard.monthPurchases': 'Achats Ce mois',
-    'dashboard.totalClients': 'Clients',
-    'dashboard.activeClients': 'Clients Actifs',
-    'dashboard.totalProducts': 'Produits',
-    'dashboard.lowStock': 'Stocks Faibles',
-    'dashboard.topClients': 'Top Clients',
-    'dashboard.recentSales': 'Ventes Récentes',
-    'dashboard.revenue': 'Chiffre d\'affaires',
-    'dashboard.collected': 'Encaissé',
-    'dashboard.outstanding': 'En attente',
-    'dashboard.netProfit': 'Bénéfice net',
+    // ── Dashboard ─────────────────────────────────────────────────────────────
+    'dashboard.title':                      'Tableau de bord',
+    'dashboard.totalRevenue':               'CA Total',
+    'dashboard.monthRevenue':               'CA Ce mois',
+    'dashboard.totalPurchases':             'Achats Total',
+    'dashboard.monthPurchases':             'Achats Ce mois',
+    'dashboard.totalClients':               'Clients',
+    'dashboard.activeClients':              'Clients Actifs',
+    'dashboard.totalProducts':              'Produits',
+    'dashboard.lowStock':                   'Stock faible',
+    'dashboard.stockOk':                    'Stocks OK',
+    'dashboard.topClients':                 'Top Clients',
+    'dashboard.topProducts':                'Top Produits',
+    'dashboard.recentSales':                'Ventes Récentes',
+    'dashboard.revenue':                    "Chiffre d'affaires",
+    'dashboard.collected':                  'Encaissé',
+    'dashboard.outstanding':                'En attente',
+    'dashboard.netProfit':                  'Bénéfice net',
+    'dashboard.receivables':                'Créances',
+    'dashboard.vatToPay':                   'TVA à payer',
+    'dashboard.vatCollected':               'TVA collectée',
+    'dashboard.vatDeductible':              'TVA déductible',
+    'dashboard.vatCredit':                  'Crédit TVA',
+    'dashboard.sales':                      'ventes',
+    'dashboard.positive':                   'Positif',
+    'dashboard.negative':                   'Négatif',
+    'dashboard.notCollected':               'Non encaissé',
+    'dashboard.thisMonth':                  'Ce mois',
+    'dashboard.active':                     'actifs',
+    'dashboard.performanceIndicators':      'Indicateurs de performance',
+    'dashboard.calculatedThisMonth':        'Calculés sur le mois en cours',
+    'dashboard.collectionRate':             'Encaissement',
+    'dashboard.netMargin':                  'Marge nette',
+    'dashboard.debtRate':                   'Taux créances',
+    'dashboard.revenueVsPurchasesVsProfit': 'CA · Achats · Profit',
+    'dashboard.last6Months':               '6 derniers mois',
+    'dashboard.noData':                     'Pas encore de données',
+    'dashboard.purchases':                  'Achats',
+    'dashboard.profit':                     'Profit',
+    'dashboard.charges':                    'Charges',
+    'dashboard.salesStatus':                'Statut des ventes',
+    'dashboard.paymentMethods':             'Méthodes de paiement',
+    'dashboard.accountingSummary':          'Résumé comptable',
+    'dashboard.month':                      'Mois',
+    'dashboard.year':                       'Année',
+    'dashboard.revenueHT':                  'CA HT',
+    'dashboard.purchasesHT':                'Achats HT',
+    'dashboard.netBenefit':                 'Bén. net',
+    'dashboard.dailySales':                 'Ventes journalières',
+    'dashboard.financialEvolution':         'Évolution financière',
+    'dashboard.byRevenue':                  "Par chiffre d'affaires",
+    'dashboard.noClients':                  'Aucun client',
+    'dashboard.noProducts':                 'Aucun produit',
+    'dashboard.lowStockProducts':           'Stock faible',
+    'dashboard.belowThreshold':             'Produits sous le seuil',
+    'dashboard.last10Transactions':         '10 dernières transactions',
+    'dashboard.noSales':                    'Aucune vente',
 
     // Clients
     'clients.title': 'Clients',
@@ -95,10 +136,10 @@ const translations: Record<Lang, Record<string, string>> = {
     'products.title': 'Produits',
     'products.new': 'Nouveau produit',
     'products.unit': 'Unité',
-    'products.purchasePrice': 'Prix d\'achat (TND)',
+    'products.purchasePrice': "Prix d'achat (TND)",
     'products.salePrice': 'Prix de vente (TND)',
     'products.stock': 'Stock',
-    'products.threshold': 'Seuil d\'alerte',
+    'products.threshold': "Seuil d'alerte",
     'products.lowStock': 'Stock faible',
     'products.outOfStock': 'Rupture de stock',
     'products.tva': 'TVA (%)',
@@ -169,6 +210,7 @@ const translations: Record<Lang, Record<string, string>> = {
     'error.generic': 'Une erreur est survenue',
   },
 
+  // ─── ENGLISH ────────────────────────────────────────────────────────────────
   en: {
     'nav.dashboard': 'Dashboard',
     'nav.clients': 'Clients',
@@ -214,21 +256,65 @@ const translations: Record<Lang, Record<string, string>> = {
     'common.filter': 'Filter',
     'common.reset': 'Reset',
     'common.period': 'Period',
-    'dashboard.title': 'Dashboard',
-    'dashboard.totalRevenue': 'Total Revenue',
-    'dashboard.monthRevenue': 'This Month Revenue',
-    'dashboard.totalPurchases': 'Total Purchases',
-    'dashboard.monthPurchases': 'This Month Purchases',
-    'dashboard.totalClients': 'Clients',
-    'dashboard.activeClients': 'Active Clients',
-    'dashboard.totalProducts': 'Products',
-    'dashboard.lowStock': 'Low Stock',
-    'dashboard.topClients': 'Top Clients',
-    'dashboard.recentSales': 'Recent Sales',
-    'dashboard.revenue': 'Revenue',
-    'dashboard.collected': 'Collected',
-    'dashboard.outstanding': 'Outstanding',
-    'dashboard.netProfit': 'Net Profit',
+
+    // ── Dashboard ─────────────────────────────────────────────────────────────
+    'dashboard.title':                      'Dashboard',
+    'dashboard.totalRevenue':               'Total Revenue',
+    'dashboard.monthRevenue':               'This Month Revenue',
+    'dashboard.totalPurchases':             'Total Purchases',
+    'dashboard.monthPurchases':             'This Month Purchases',
+    'dashboard.totalClients':               'Clients',
+    'dashboard.activeClients':              'Active Clients',
+    'dashboard.totalProducts':              'Products',
+    'dashboard.lowStock':                   'Low Stock',
+    'dashboard.stockOk':                    'Stock OK',
+    'dashboard.topClients':                 'Top Clients',
+    'dashboard.topProducts':                'Top Products',
+    'dashboard.recentSales':                'Recent Sales',
+    'dashboard.revenue':                    'Revenue',
+    'dashboard.collected':                  'Collected',
+    'dashboard.outstanding':                'Outstanding',
+    'dashboard.netProfit':                  'Net Profit',
+    'dashboard.receivables':                'Receivables',
+    'dashboard.vatToPay':                   'VAT to Pay',
+    'dashboard.vatCollected':               'VAT Collected',
+    'dashboard.vatDeductible':              'Deductible VAT',
+    'dashboard.vatCredit':                  'VAT Credit',
+    'dashboard.sales':                      'sales',
+    'dashboard.positive':                   'Positive',
+    'dashboard.negative':                   'Negative',
+    'dashboard.notCollected':               'Not collected',
+    'dashboard.thisMonth':                  'This month',
+    'dashboard.active':                     'active',
+    'dashboard.performanceIndicators':      'Performance Indicators',
+    'dashboard.calculatedThisMonth':        'Calculated for current month',
+    'dashboard.collectionRate':             'Collection Rate',
+    'dashboard.netMargin':                  'Net Margin',
+    'dashboard.debtRate':                   'Debt Rate',
+    'dashboard.revenueVsPurchasesVsProfit': 'Revenue · Purchases · Profit',
+    'dashboard.last6Months':               'Last 6 months',
+    'dashboard.noData':                     'No data yet',
+    'dashboard.purchases':                  'Purchases',
+    'dashboard.profit':                     'Profit',
+    'dashboard.charges':                    'Expenses',
+    'dashboard.salesStatus':                'Sales Status',
+    'dashboard.paymentMethods':             'Payment Methods',
+    'dashboard.accountingSummary':          'Accounting Summary',
+    'dashboard.month':                      'Month',
+    'dashboard.year':                       'Year',
+    'dashboard.revenueHT':                  'Revenue (excl. VAT)',
+    'dashboard.purchasesHT':                'Purchases (excl. VAT)',
+    'dashboard.netBenefit':                 'Net Profit',
+    'dashboard.dailySales':                 'Daily Sales',
+    'dashboard.financialEvolution':         'Financial Evolution',
+    'dashboard.byRevenue':                  'By revenue',
+    'dashboard.noClients':                  'No clients',
+    'dashboard.noProducts':                 'No products',
+    'dashboard.lowStockProducts':           'Low Stock',
+    'dashboard.belowThreshold':             'Products below threshold',
+    'dashboard.last10Transactions':         'Last 10 transactions',
+    'dashboard.noSales':                    'No sales',
+
     'clients.title': 'Clients',
     'clients.new': 'New Client',
     'clients.edit': 'Edit Client',
@@ -303,6 +389,7 @@ const translations: Record<Lang, Record<string, string>> = {
     'error.generic': 'An error occurred',
   },
 
+  // ─── ARABIC ─────────────────────────────────────────────────────────────────
   ar: {
     'nav.dashboard': 'لوحة التحكم',
     'nav.clients': 'العملاء',
@@ -348,21 +435,65 @@ const translations: Record<Lang, Record<string, string>> = {
     'common.filter': 'تصفية',
     'common.reset': 'إعادة تعيين',
     'common.period': 'الفترة',
-    'dashboard.title': 'لوحة التحكم',
-    'dashboard.totalRevenue': 'إجمالي الإيرادات',
-    'dashboard.monthRevenue': 'إيرادات هذا الشهر',
-    'dashboard.totalPurchases': 'إجمالي المشتريات',
-    'dashboard.monthPurchases': 'مشتريات هذا الشهر',
-    'dashboard.totalClients': 'العملاء',
-    'dashboard.activeClients': 'العملاء النشطون',
-    'dashboard.totalProducts': 'المنتجات',
-    'dashboard.lowStock': 'المخزون المنخفض',
-    'dashboard.topClients': 'أفضل العملاء',
-    'dashboard.recentSales': 'آخر المبيعات',
-    'dashboard.revenue': 'الإيرادات',
-    'dashboard.collected': 'المحصل',
-    'dashboard.outstanding': 'المستحق',
-    'dashboard.netProfit': 'صافي الربح',
+
+    // ── Dashboard ─────────────────────────────────────────────────────────────
+    'dashboard.title':                      'لوحة التحكم',
+    'dashboard.totalRevenue':               'إجمالي الإيرادات',
+    'dashboard.monthRevenue':               'إيرادات هذا الشهر',
+    'dashboard.totalPurchases':             'إجمالي المشتريات',
+    'dashboard.monthPurchases':             'مشتريات هذا الشهر',
+    'dashboard.totalClients':               'العملاء',
+    'dashboard.activeClients':              'العملاء النشطون',
+    'dashboard.totalProducts':              'المنتجات',
+    'dashboard.lowStock':                   'مخزون منخفض',
+    'dashboard.stockOk':                    'المخزون جيد',
+    'dashboard.topClients':                 'أفضل العملاء',
+    'dashboard.topProducts':                'أفضل المنتجات',
+    'dashboard.recentSales':                'آخر المبيعات',
+    'dashboard.revenue':                    'الإيرادات',
+    'dashboard.collected':                  'المحصّل',
+    'dashboard.outstanding':                'المستحق',
+    'dashboard.netProfit':                  'صافي الربح',
+    'dashboard.receivables':                'المستحقات',
+    'dashboard.vatToPay':                   'TVA المستحقة',
+    'dashboard.vatCollected':               'TVA المحصّلة',
+    'dashboard.vatDeductible':              'TVA القابلة للخصم',
+    'dashboard.vatCredit':                  'رصيد TVA',
+    'dashboard.sales':                      'مبيعات',
+    'dashboard.positive':                   'إيجابي',
+    'dashboard.negative':                   'سلبي',
+    'dashboard.notCollected':               'غير محصّل',
+    'dashboard.thisMonth':                  'هذا الشهر',
+    'dashboard.active':                     'نشط',
+    'dashboard.performanceIndicators':      'مؤشرات الأداء',
+    'dashboard.calculatedThisMonth':        'محسوبة للشهر الحالي',
+    'dashboard.collectionRate':             'معدل التحصيل',
+    'dashboard.netMargin':                  'هامش الربح الصافي',
+    'dashboard.debtRate':                   'معدل الديون',
+    'dashboard.revenueVsPurchasesVsProfit': 'الإيرادات · المشتريات · الربح',
+    'dashboard.last6Months':               'آخر 6 أشهر',
+    'dashboard.noData':                     'لا توجد بيانات بعد',
+    'dashboard.purchases':                  'المشتريات',
+    'dashboard.profit':                     'الربح',
+    'dashboard.charges':                    'المصاريف',
+    'dashboard.salesStatus':                'حالة المبيعات',
+    'dashboard.paymentMethods':             'طرق الدفع',
+    'dashboard.accountingSummary':          'ملخص محاسبي',
+    'dashboard.month':                      'شهر',
+    'dashboard.year':                       'سنة',
+    'dashboard.revenueHT':                  'الإيرادات (بدون TVA)',
+    'dashboard.purchasesHT':                'المشتريات (بدون TVA)',
+    'dashboard.netBenefit':                 'صافي الربح',
+    'dashboard.dailySales':                 'المبيعات اليومية',
+    'dashboard.financialEvolution':         'التطور المالي',
+    'dashboard.byRevenue':                  'حسب الإيرادات',
+    'dashboard.noClients':                  'لا يوجد عملاء',
+    'dashboard.noProducts':                 'لا توجد منتجات',
+    'dashboard.lowStockProducts':           'مخزون منخفض',
+    'dashboard.belowThreshold':             'منتجات دون الحد الأدنى',
+    'dashboard.last10Transactions':         'آخر 10 معاملات',
+    'dashboard.noSales':                    'لا توجد مبيعات',
+
     'clients.title': 'العملاء',
     'clients.new': 'عميل جديد',
     'clients.edit': 'تعديل العميل',
@@ -468,15 +599,15 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <I18nContext.Provider value={{ lang, setLang, t, dir: lang === 'ar' ? 'rtl' : 'ltr' }}>
-      {children}
-    </I18nContext.Provider>
+      <I18nContext.Provider value={{ lang, setLang, t, dir: lang === 'ar' ? 'rtl' : 'ltr' }}>
+        {children}
+      </I18nContext.Provider>
   );
 };
 
 export const useI18n = () => useContext(I18nContext);
 
-// Helper : sélecteur de langue pour la Sidebar/Header
+// ─── Sélecteur de langue ──────────────────────────────────────────────────────
 export const LangSelector: React.FC = () => {
   const { lang, setLang } = useI18n();
   const langs: { code: Lang; flag: string; label: string }[] = [
@@ -485,21 +616,20 @@ export const LangSelector: React.FC = () => {
     { code: 'en', flag: '🇬🇧', label: 'EN' },
   ];
   return (
-    <div className="flex gap-1">
-      {langs.map((l) => (
-        <button
-          key={l.code}
-          onClick={() => setLang(l.code)}
-          className={`px-2 py-1 rounded-lg text-xs font-medium transition-colors ${
-            lang === l.code
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-          }`}
-        >
-          {l.flag} {l.label}
-        </button>
-      ))}
-    </div>
+      <div className="flex gap-1">
+        {langs.map((l) => (
+            <button
+                key={l.code}
+                onClick={() => setLang(l.code)}
+                className={`px-2 py-1 rounded-lg text-xs font-medium transition-colors ${
+                    lang === l.code
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+            >
+              {l.flag} {l.label}
+            </button>
+        ))}
+      </div>
   );
 };
-
