@@ -4,42 +4,37 @@ import { purchasesApi, suppliersApi, productsApi } from '../../api';
 import DataTable from '../../components/common/DataTable';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import { useConfirmDialog } from '../../hooks/useConfirmDialog';
-import { Plus, Trash2, CreditCard, X, Eye, FileText, Download } from 'lucide-react';
+import { useI18n } from '../../context/I18nContext';
+import {
+  Plus, Trash2, CreditCard, X, Eye, FileText, Download,
+  Package, ChevronRight, ChevronLeft,
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 
 const formatTND = (v: number) => `${(v || 0).toFixed(3)} TND`;
-const PAYMENT_METHODS = [
-  { value: 'cash', label: 'Espèces' },
-  { value: 'virement', label: 'Virement' },
-  { value: 'cheque', label: 'Chèque' },
-  { value: 'online', label: 'En ligne' },
-];
 
-const statusBadge = (s: string) => {
-  const m: Record<string, [string, string]> = {
-    paid:    ['Payé',       'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'],
-    partial: ['Partiel',    'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'],
-    pending: ['En attente', 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'],
-  };
-  const [l, c] = m[s] || ['—', 'bg-gray-100 text-gray-500'];
-  return <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${c}`}>{l}</span>;
-};
+const PAYMENT_METHODS = [
+  { value: 'cash',     label: 'payment.cash' },
+  { value: 'virement', label: 'payment.virement' },
+  { value: 'cheque',   label: 'payment.cheque' },
+  { value: 'online',   label: 'payment.online' },
+];
 
 const PurchasesPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { state: confirmState, confirm, proceed, cancel } = useConfirmDialog();
+  const { t, dir } = useI18n();
 
-  const [showForm,      setShowForm]      = useState(false);
-  const [showPayment,   setShowPayment]   = useState<any>(null);
-  const [detailPurchase,setDetailPurchase]= useState<any>(null);
-  const [payAmount,     setPayAmount]     = useState('');
-  const [payMethod,     setPayMethod]     = useState('cash');
-  const [payNote,       setPayNote]       = useState('');
+  const [showForm,        setShowForm]        = useState(false);
+  const [showPayment,     setShowPayment]     = useState<any>(null);
+  const [detailPurchase,  setDetailPurchase]  = useState<any>(null);
+  const [selectedItem,    setSelectedItem]    = useState<any>(null);
+  const [payAmount,       setPayAmount]       = useState('');
+  const [payMethod,       setPayMethod]       = useState('cash');
+  const [payNote,         setPayNote]         = useState('');
 
   const emptyItem = () => ({ productId: '', productName: '', quantity: 1, unitPrice: 0, tva: 19 });
-
-  // ✅ FIX : utilise FournisseurId (nom attendu par le backend)
   const [form, setForm] = useState({
     FournisseurId: '',
     items: [emptyItem()],
@@ -67,8 +62,7 @@ const PurchasesPage: React.FC = () => {
     enabled:  !!detailPurchase?._id,
   });
 
-  /* ── Produits filtrés par fournisseur sélectionné ────────────────────── */
-  // ✅ FIX : cherche dans les produits du fournisseur sélectionné
+  /* ── Produits filtrés par fournisseur ────────────────────────────────── */
   const selectedSupplier = (suppliers as any[]).find((s: any) => s._id === form.FournisseurId);
   const supplierProductIds: string[] = (selectedSupplier?.products || []).map((p: any) =>
       typeof p === 'string' ? p : p._id?.toString()
@@ -77,6 +71,17 @@ const PurchasesPage: React.FC = () => {
       ? (allProducts as any[]).filter((p: any) => supplierProductIds.includes(p._id))
       : (allProducts as any[]);
 
+  /* ── Status config ───────────────────────────────────────────────────── */
+  const statusConfig: Record<string, { label: string; cls: string }> = {
+    paid:    { label: t('sales.status.paid'),    cls: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
+    partial: { label: t('sales.status.partial'), cls: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
+    pending: { label: t('sales.status.pending'), cls: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' },
+  };
+  const statusBadge = (s: string) => {
+    const cfg = statusConfig[s] || { label: s, cls: 'bg-gray-100 text-gray-500' };
+    return <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${cfg.cls}`}>{cfg.label}</span>;
+  };
+
   /* ── Mutations ───────────────────────────────────────────────────────── */
   const createMut = useMutation({
     mutationFn: purchasesApi.create,
@@ -84,13 +89,11 @@ const PurchasesPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['purchases'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['suppliers'] });
-      toast.success('Achat créé');
+      toast.success(t('nav.purchases'));
       setShowForm(false);
       setForm({ FournisseurId: '', items: [emptyItem()], initialPayment: 0, paymentMethod: 'cash', notes: '' });
     },
-    onError: (err: any) => {
-      toast.error(err?.response?.data?.message || 'Erreur lors de la création');
-    },
+    onError: (err: any) => toast.error(err?.response?.data?.message || t('error.generic')),
   });
 
   const deleteMut = useMutation({
@@ -98,7 +101,7 @@ const PurchasesPage: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['purchases'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast.success('Achat supprimé');
+      toast.success(t('common.delete'));
     },
   });
 
@@ -107,7 +110,7 @@ const PurchasesPage: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['purchases'] });
       queryClient.invalidateQueries({ queryKey: ['purchase-detail'] });
-      toast.success('Paiement enregistré');
+      toast.success(t('sales.addPayment'));
       setShowPayment(null);
       setPayAmount('');
       setPayNote('');
@@ -119,27 +122,27 @@ const PurchasesPage: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['purchases'] });
       queryClient.invalidateQueries({ queryKey: ['purchase-detail'] });
-      toast.success('Paiement supprimé');
+      toast.success(t('common.delete'));
     },
   });
 
   /* ── Handlers ────────────────────────────────────────────────────────── */
   const handleDelete = (p: any) => confirm(
       {
-        title:         'Supprimer cet achat',
-        message:       `Supprimer l'achat de "${p.FournisseurName || p.supplierName}" de ${formatTND(p.totalTTC)} ?`,
-        dangerMessage: 'Cet achat sera supprimé DÉFINITIVEMENT.',
-        confirmLabel:  'Supprimer définitivement',
+        title:         `${t('common.delete')} "${p.FournisseurName}"`,
+        message:       `${t('common.delete')} ${formatTND(p.totalTTC)} ?`,
+        dangerMessage: t('error.generic'),
+        confirmLabel:  t('common.delete'),
       },
       () => deleteMut.mutate(p._id),
   );
 
   const handleDeletePayment = (purchaseId: string, paymentId: string, amount: number) => confirm(
       {
-        title:         'Supprimer ce paiement',
-        message:       `Supprimer le paiement de ${formatTND(amount)} ?`,
-        dangerMessage: 'Ce paiement sera supprimé DÉFINITIVEMENT.',
-        confirmLabel:  'Supprimer définitivement',
+        title:         t('common.delete'),
+        message:       `${t('common.delete')} ${formatTND(amount)} ?`,
+        dangerMessage: t('error.generic'),
+        confirmLabel:  t('common.delete'),
       },
       () => deletePaymentMut.mutate({ purchaseId, paymentId }),
   );
@@ -148,14 +151,13 @@ const PurchasesPage: React.FC = () => {
     if (!payAmount) return;
     confirm(
         {
-          title:   'Confirmer le paiement',
-          message: `Confirmer le paiement de ${payAmount} TND pour l'achat de "${purchase.FournisseurName || purchase.supplierName}" par ${PAYMENT_METHODS.find(m => m.value === payMethod)?.label} ?`,
+          title:   t('sales.addPayment'),
+          message: `${payAmount} TND — ${t(PAYMENT_METHODS.find(m => m.value === payMethod)?.label || '')}`,
         },
         () => paymentMut.mutate({ id: purchase._id, data: { amount: +payAmount, method: payMethod, note: payNote } }),
     );
   };
 
-  // ✅ FIX : sélection produit — remplir productName depuis allProducts
   const selectProduct = (i: number, productId: string) => {
     const p = (allProducts as any[]).find((x: any) => x._id === productId);
     setForm(f => ({
@@ -171,8 +173,6 @@ const PurchasesPage: React.FC = () => {
   const totalHT  = form.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
   const totalTTC = form.items.reduce((s, i) => s + i.quantity * i.unitPrice * (1 + i.tva / 100), 0);
 
-  const inp = 'w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500';
-
   const handleDownloadInvoice = async (id: string) => {
     try {
       const blob = await purchasesApi.getInvoice(id);
@@ -180,40 +180,45 @@ const PurchasesPage: React.FC = () => {
       const a    = document.createElement('a');
       a.href = url; a.download = `facture-achat-${id}.pdf`; a.click();
       URL.revokeObjectURL(url);
-    } catch { toast.error('Facture non disponible'); }
+    } catch { toast.error(t('error.generic')); }
   };
+
+  const inp = 'w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500';
 
   /* ── Columns ─────────────────────────────────────────────────────────── */
   const columns = [
     {
-      key: 'FournisseurName', header: 'Fournisseur', sortable: true,
+      key: 'FournisseurName', header: t('nav.suppliers'), sortable: true,
       render: (v: string) => <span className="font-medium text-gray-900 dark:text-white">{v}</span>,
     },
-    { key: 'totalTTC',        header: 'Total TTC', sortable: true, render: (v: number) => formatTND(v) },
-    { key: 'amountPaid',      header: 'Payé',      sortable: true, render: (v: number) => <span className="text-green-600 font-medium">{formatTND(v)}</span> },
+    { key: 'totalTTC',        header: t('sales.totalTTC'), sortable: true, render: (v: number) => formatTND(v) },
+    { key: 'amountPaid',      header: t('sales.paid'),     sortable: true, render: (v: number) => <span className="text-green-600 font-medium">{formatTND(v)}</span> },
     {
-      key: 'amountRemaining', header: 'Reste', sortable: true,
+      key: 'amountRemaining', header: t('sales.remaining'), sortable: true,
       render: (v: number) => <span className={v > 0 ? 'text-red-600 font-semibold' : 'text-green-600'}>{formatTND(v)}</span>,
     },
-    { key: 'status',    header: 'Statut', render: (v: string) => statusBadge(v) },
-    { key: 'createdAt', header: 'Date',   sortable: true, render: (v: string) => v ? format(new Date(v), 'dd/MM/yyyy') : '-' },
+    { key: 'status',    header: t('common.status'), render: (v: string) => statusBadge(v) },
+    { key: 'createdAt', header: t('common.date'),   sortable: true, render: (v: string) => v ? format(new Date(v), 'dd/MM/yyyy') : '-' },
   ];
 
   /* ════════════════════════════════════════════════════════════════════════ */
   return (
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6" dir={dir}>
 
         {/* ── En-tête ── */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Achats</h1>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">
-              {(purchases as any[]).length} achat{(purchases as any[]).length !== 1 ? 's' : ''}
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{t('nav.purchases')}</h1>
+            <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">
+              {(purchases as any[]).length} {t('nav.purchases').toLowerCase()}
             </p>
           </div>
-          <button onClick={() => setShowForm(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition-colors">
-            <Plus size={16} /> Nouvel achat
+          <button
+              onClick={() => setShowForm(true)}
+              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs sm:text-sm font-medium transition-colors shrink-0"
+          >
+            <Plus size={15} />
+            <span>{t('nav.purchases')}</span>
           </button>
         </div>
 
@@ -223,11 +228,11 @@ const PurchasesPage: React.FC = () => {
             columns={columns}
             searchKeys={['FournisseurName', 'status']}
             isLoading={isLoading}
-            emptyMessage="Aucun achat"
+            emptyMessage={t('common.noData')}
             onRowClick={setDetailPurchase}
             actions={(row) => (
                 <div className="flex items-center justify-end gap-1">
-                  <button onClick={(e) => { e.stopPropagation(); setDetailPurchase(row); }}            className="p-1.5 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg"><Eye size={15} /></button>
+                  <button onClick={(e) => { e.stopPropagation(); setDetailPurchase(row); }}           className="p-1.5 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg"><Eye size={15} /></button>
                   <button onClick={(e) => { e.stopPropagation(); handleDownloadInvoice(row._id); }}   className="p-1.5 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg"><FileText size={15} /></button>
                   {row.status !== 'paid' && (
                       <button onClick={(e) => { e.stopPropagation(); setShowPayment(row); }}             className="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg"><CreditCard size={15} /></button>
@@ -238,35 +243,26 @@ const PurchasesPage: React.FC = () => {
         />
 
         {/* ══════════════════════════════════════════════════════════════════
-          MODAL : Nouvel achat
+          MODAL : Nouvel achat — bottom sheet mobile
       ══════════════════════════════════════════════════════════════════ */}
         {showForm && (
             <div className="fixed inset-0 z-40 flex items-end sm:items-center justify-center">
               <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowForm(false)} />
               <div className="relative bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-2xl mx-0 sm:mx-4 max-h-[94vh] overflow-y-auto">
 
-                {/* Drag handle mobile */}
                 <div className="w-10 h-1 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mt-3 sm:hidden" />
 
-                {/* Header sticky */}
                 <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between rounded-t-2xl">
-                  <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Nouvel achat</h2>
+                  <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('nav.purchases')}</h2>
                   <button onClick={() => setShowForm(false)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"><X size={18} /></button>
                 </div>
 
-                <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      // ✅ FIX : on envoie bien FournisseurId au backend
-                      createMut.mutate(form as any);
-                    }}
-                    className="p-4 sm:p-6 space-y-5"
-                >
+                <form onSubmit={(e) => { e.preventDefault(); createMut.mutate(form as any); }} className="p-4 sm:p-6 space-y-5">
 
                   {/* Fournisseur */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Fournisseur <span className="text-red-500">*</span>
+                      {t('nav.suppliers')} <span className="text-red-500">*</span>
                     </label>
                     <select
                         required
@@ -274,14 +270,14 @@ const PurchasesPage: React.FC = () => {
                         onChange={e => setForm(f => ({ ...f, FournisseurId: e.target.value, items: [emptyItem()] }))}
                         className={inp}
                     >
-                      <option value="">Sélectionner un fournisseur</option>
+                      <option value="">{t('common.search')}</option>
                       {(suppliers as any[]).map((s: any) => (
                           <option key={s._id} value={s._id}>{s.name} — {s.phone}</option>
                       ))}
                     </select>
                     {form.FournisseurId && supplierProducts.length === 0 && (
-                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1.5 flex items-center gap-1">
-                          ⚠️ Aucun produit associé à ce fournisseur. Allez dans Fournisseurs pour en ajouter.
+                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1.5">
+                          ⚠️ {t('common.noData')}
                         </p>
                     )}
                   </div>
@@ -290,14 +286,11 @@ const PurchasesPage: React.FC = () => {
                   <div>
                     <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Produits <span className="text-red-500">*</span>
+                    {t('products.title')} <span className="text-red-500">*</span>
                   </span>
-                      <button
-                          type="button"
-                          onClick={() => setForm(f => ({ ...f, items: [...f.items, emptyItem()] }))}
-                          className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-                      >
-                        <Plus size={11} /> Ajouter ligne
+                      <button type="button" onClick={() => setForm(f => ({ ...f, items: [...f.items, emptyItem()] }))}
+                              className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+                        <Plus size={11} /> {t('sales.addProduct')}
                       </button>
                     </div>
 
@@ -305,11 +298,11 @@ const PurchasesPage: React.FC = () => {
                       <table className="w-full text-xs">
                         <thead>
                         <tr className="bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                          <th className="text-left px-3 py-2">Produit</th>
-                          <th className="px-2 py-2 w-16 text-right">Qté</th>
-                          <th className="px-2 py-2 w-24 text-right">Prix HT</th>
-                          <th className="px-2 py-2 w-16 text-right">TVA %</th>
-                          <th className="px-3 py-2 w-24 text-right">Sous-total</th>
+                          <th className="text-left px-3 py-2">{t('products.title')}</th>
+                          <th className="px-2 py-2 w-16 text-right">{t('sales.quantity')}</th>
+                          <th className="px-2 py-2 w-24 text-right">{t('sales.unitPrice')}</th>
+                          <th className="px-2 py-2 w-16 text-right">{t('products.tva')}</th>
+                          <th className="px-3 py-2 w-24 text-right">{t('common.total')}</th>
                           <th className="w-8" />
                         </tr>
                         </thead>
@@ -317,12 +310,9 @@ const PurchasesPage: React.FC = () => {
                         {form.items.map((item, i) => (
                             <tr key={i}>
                               <td className="px-3 py-2">
-                                <select
-                                    value={item.productId}
-                                    onChange={e => selectProduct(i, e.target.value)}
-                                    className="w-full px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none text-xs min-w-[120px]"
-                                >
-                                  <option value="">— Choisir —</option>
+                                <select value={item.productId} onChange={e => selectProduct(i, e.target.value)}
+                                        className="w-full px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none text-xs min-w-[120px]">
+                                  <option value="">— {t('common.search')} —</option>
                                   {(form.FournisseurId ? supplierProducts : (allProducts as any[])).map((p: any) => (
                                       <option key={p._id} value={p._id}>{p.name}</option>
                                   ))}
@@ -348,8 +338,7 @@ const PurchasesPage: React.FC = () => {
                               </td>
                               <td className="pr-2 py-2">
                                 {form.items.length > 1 && (
-                                    <button type="button"
-                                            onClick={() => setForm(f => ({ ...f, items: f.items.filter((_, j) => j !== i) }))}
+                                    <button type="button" onClick={() => setForm(f => ({ ...f, items: f.items.filter((_, j) => j !== i) }))}
                                             className="text-red-400 hover:text-red-600 p-1 rounded">
                                       <X size={12} />
                                     </button>
@@ -361,53 +350,48 @@ const PurchasesPage: React.FC = () => {
                       </table>
                     </div>
 
-                    {/* Récap totaux */}
-                    <div className="mt-3 flex justify-end gap-6 text-xs text-gray-500 dark:text-gray-400 px-1">
-                      <span>Total HT : <strong className="text-gray-900 dark:text-white">{formatTND(totalHT)}</strong></span>
+                    {/* Totaux */}
+                    <div className="mt-3 flex justify-end gap-4 sm:gap-6 text-xs text-gray-500 dark:text-gray-400 px-1 flex-wrap">
+                      <span>{t('sales.totalHT')} : <strong className="text-gray-900 dark:text-white">{formatTND(totalHT)}</strong></span>
                       <span>TVA : <strong className="text-gray-900 dark:text-white">{formatTND(totalTTC - totalHT)}</strong></span>
-                      <span className="text-sm">Total TTC : <strong className="text-blue-600 dark:text-blue-400 text-base">{formatTND(totalTTC)}</strong></span>
+                      <span className="text-sm">{t('sales.totalTTC')} : <strong className="text-blue-600 dark:text-blue-400 text-base">{formatTND(totalTTC)}</strong></span>
                     </div>
                   </div>
 
-                  {/* Paiement initial + mode + notes */}
+                  {/* Paiement + mode + notes */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Paiement initial</label>
-                      <input
-                          type="number" min={0} step={0.001} max={totalTTC}
-                          value={form.initialPayment}
-                          onChange={e => setForm(f => ({ ...f, initialPayment: +e.target.value }))}
-                          className={inp}
-                      />
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('sales.initialPayment')}</label>
+                      <input type="number" min={0} step={0.001} max={totalTTC} value={form.initialPayment}
+                             onChange={e => setForm(f => ({ ...f, initialPayment: +e.target.value }))} className={inp} />
                       {form.initialPayment > 0 && (
                           <p className="text-xs text-gray-400 mt-1">
-                            Reste : <span className={totalTTC - form.initialPayment > 0 ? 'text-red-500 font-medium' : 'text-green-500 font-medium'}>
+                            {t('sales.remaining')} : <span className={totalTTC - form.initialPayment > 0 ? 'text-red-500 font-medium' : 'text-green-500 font-medium'}>
                         {formatTND(Math.max(0, totalTTC - form.initialPayment))}
                       </span>
                           </p>
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mode de paiement</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('sales.paymentMethod')}</label>
                       <select value={form.paymentMethod} onChange={e => setForm(f => ({ ...f, paymentMethod: e.target.value }))} className={inp}>
-                        {PAYMENT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+                        {PAYMENT_METHODS.map(m => <option key={m.value} value={m.value}>{t(m.label)}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
-                      <input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Optionnel" className={inp} />
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('common.notes')}</label>
+                      <input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder={t('common.optional')} className={inp} />
                     </div>
                   </div>
 
-                  {/* Boutons */}
                   <div className="flex gap-3 pt-1">
                     <button type="button" onClick={() => setShowForm(false)}
-                            className="flex-1 px-4 py-2.5 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                      Annuler
+                            className="flex-1 px-4 py-2.5 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-xl text-xs sm:text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      {t('common.cancel')}
                     </button>
                     <button type="submit" disabled={createMut.isPending || !form.FournisseurId || form.items.every(i => !i.productId)}
-                            className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl text-sm font-medium transition-colors">
-                      {createMut.isPending ? 'Enregistrement...' : 'Créer l\'achat'}
+                            className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl text-xs sm:text-sm font-medium transition-colors">
+                      {createMut.isPending ? t('common.loading') : t('common.create')}
                     </button>
                   </div>
                 </form>
@@ -424,9 +408,9 @@ const PurchasesPage: React.FC = () => {
               <div className="relative bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-sm mx-0 sm:mx-4 p-5 sm:p-6">
                 <div className="w-10 h-1 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-4 sm:hidden" />
                 <button onClick={() => setShowPayment(null)} className="absolute top-4 right-4 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"><X size={18} /></button>
-                <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-1">Ajouter un paiement</h2>
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-1">{t('sales.addPayment')}</h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                  Reste dû : <strong className="text-red-600 dark:text-red-400">{formatTND(showPayment.amountRemaining)}</strong>
+                  {t('sales.remaining')} : <strong className="text-red-600 dark:text-red-400">{formatTND(showPayment.amountRemaining)}</strong>
                 </p>
                 <div className="space-y-3">
                   <div>
@@ -435,24 +419,23 @@ const PurchasesPage: React.FC = () => {
                            value={payAmount} onChange={e => setPayAmount(e.target.value)} className={inp} autoFocus />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mode</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('sales.paymentMethod')}</label>
                     <select value={payMethod} onChange={e => setPayMethod(e.target.value)} className={inp}>
-                      {PAYMENT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+                      {PAYMENT_METHODS.map(m => <option key={m.value} value={m.value}>{t(m.label)}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Note</label>
-                    <input value={payNote} onChange={e => setPayNote(e.target.value)} placeholder="Optionnel" className={inp} />
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('common.notes')}</label>
+                    <input value={payNote} onChange={e => setPayNote(e.target.value)} placeholder={t('common.optional')} className={inp} />
                   </div>
                   <div className="flex gap-3 pt-1">
                     <button onClick={() => setShowPayment(null)}
                             className="flex-1 px-4 py-2.5 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                      Annuler
+                      {t('common.cancel')}
                     </button>
-                    <button onClick={() => handleAddPayment(showPayment)}
-                            disabled={!payAmount || paymentMut.isPending}
+                    <button onClick={() => handleAddPayment(showPayment)} disabled={!payAmount || paymentMut.isPending}
                             className="flex-1 px-4 py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded-xl text-sm font-medium transition-colors">
-                      {paymentMut.isPending ? '...' : 'Confirmer'}
+                      {paymentMut.isPending ? t('common.loading') : t('common.confirm')}
                     </button>
                   </div>
                 </div>
@@ -464,16 +447,17 @@ const PurchasesPage: React.FC = () => {
           DRAWER : Détail d'un achat
       ══════════════════════════════════════════════════════════════════ */}
         {detailPurchase && (
-            <div className="fixed inset-0 z-40 flex">
-              <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setDetailPurchase(null)} />
-              <div className="relative ml-auto w-full max-w-xl bg-white dark:bg-gray-900 shadow-2xl overflow-y-auto">
+            <div className="fixed inset-0 z-40 flex items-end sm:justify-end" dir={dir}>
+              <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setDetailPurchase(null); setSelectedItem(null); }} />
+              <div className="relative w-full sm:w-auto sm:max-w-xl sm:h-full bg-white dark:bg-gray-900 shadow-2xl overflow-y-auto rounded-t-2xl sm:rounded-none max-h-[92vh] sm:max-h-full">
 
-                {/* Header sticky */}
-                <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-6 py-4 flex items-center justify-between z-10">
+                <div className="w-10 h-1 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mt-3 sm:hidden" />
+
+                <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between mt-1 sm:mt-0">
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
-                        Achat — {purchaseDetail?.FournisseurName || detailPurchase.FournisseurName}
+                        {t('nav.purchases')} — {purchaseDetail?.FournisseurName || detailPurchase.FournisseurName}
                       </h2>
                       {statusBadge(purchaseDetail?.status || detailPurchase.status)}
                     </div>
@@ -484,83 +468,80 @@ const PurchasesPage: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <button onClick={() => handleDownloadInvoice(detailPurchase._id)}
                             className="flex items-center gap-1 px-3 py-1.5 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-xs hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                      <Download size={13} /> Facture
+                      <Download size={13} /> {t('sales.invoice')}
                     </button>
-                    <button onClick={() => setDetailPurchase(null)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                      <X size={20} />
+                    <button onClick={() => { setDetailPurchase(null); setSelectedItem(null); }} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                      <X size={18} />
                     </button>
                   </div>
                 </div>
 
-                <div className="p-6 space-y-5">
+                <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
 
-                  {/* Stats financières */}
-                  <div className="grid grid-cols-3 gap-3">
+                  {/* Stats */}
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
                     {[
-                      { label: 'Total TTC', value: formatTND(purchaseDetail?.totalTTC    || detailPurchase.totalTTC),    cls: 'text-blue-600 dark:text-blue-400' },
-                      { label: 'Payé',      value: formatTND(purchaseDetail?.amountPaid  || detailPurchase.amountPaid),  cls: 'text-green-600 dark:text-green-400' },
-                      { label: 'Reste',     value: formatTND(purchaseDetail?.amountRemaining ?? detailPurchase.amountRemaining), cls: (purchaseDetail?.amountRemaining ?? detailPurchase.amountRemaining) > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-400' },
+                      { label: t('sales.totalTTC'), value: formatTND(purchaseDetail?.totalTTC    || detailPurchase.totalTTC),    cls: 'text-blue-600 dark:text-blue-400' },
+                      { label: t('sales.paid'),     value: formatTND(purchaseDetail?.amountPaid  || detailPurchase.amountPaid),  cls: 'text-green-600 dark:text-green-400' },
+                      { label: t('sales.remaining'),value: formatTND(purchaseDetail?.amountRemaining ?? detailPurchase.amountRemaining), cls: (purchaseDetail?.amountRemaining ?? detailPurchase.amountRemaining) > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-400' },
                     ].map(({ label, value, cls }) => (
-                        <div key={label} className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 text-center">
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{label}</p>
-                          <p className={`text-sm font-bold ${cls}`}>{value}</p>
+                        <div key={label} className="bg-gray-50 dark:bg-gray-800 rounded-xl p-2.5 sm:p-3 text-center">
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 line-clamp-1">{label}</p>
+                          <p className={`text-xs sm:text-sm font-bold ${cls} truncate`}>{value}</p>
                         </div>
                     ))}
                   </div>
 
                   {/* Produits */}
                   <div>
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-                      Produits ({(purchaseDetail?.items || []).length})
+                    <h3 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white mb-2 sm:mb-3 flex items-center gap-2">
+                      <Package size={14} className="text-gray-400" />
+                      {t('products.title')} ({(purchaseDetail?.items || []).length})
                     </h3>
-                    <div className="overflow-x-auto rounded-xl border border-gray-100 dark:border-gray-700">
-                      <table className="w-full text-xs">
-                        <thead>
-                        <tr className="bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                          <th className="text-left px-3 py-2">Produit</th>
-                          <th className="px-3 py-2 text-right">Qté</th>
-                          <th className="px-3 py-2 text-right">Prix HT</th>
-                          <th className="px-3 py-2 text-right">TVA</th>
-                          <th className="px-3 py-2 text-right">Total TTC</th>
-                        </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                        {(purchaseDetail?.items || []).map((item: any, i: number) => (
-                            <tr key={i}>
-                              <td className="px-3 py-2 text-gray-700 dark:text-gray-300 font-medium">{item.productName}</td>
-                              <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-400">{item.quantity}</td>
-                              <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-400">{formatTND(item.unitPrice)}</td>
-                              <td className="px-3 py-2 text-right text-gray-400">{item.tva}%</td>
-                              <td className="px-3 py-2 text-right font-semibold text-gray-900 dark:text-white">{formatTND(item.totalTTC)}</td>
-                            </tr>
-                        ))}
-                        </tbody>
-                      </table>
+                    <div className="space-y-2">
+                      {(purchaseDetail?.items || []).map((item: any, i: number) => (
+                          <button key={i} onClick={() => setSelectedItem(item)}
+                                  className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/10 border border-transparent hover:border-blue-200 dark:hover:border-blue-800 transition-all text-left active:scale-[0.99]">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white truncate">{item.productName}</p>
+                              <p className="text-xs text-gray-400 mt-0.5">
+                                {t('sales.quantity')}: {item.quantity} · {t('sales.unitPrice')}: {formatTND(item.unitPrice)}
+                                {item.tva > 0 && ` · TVA ${item.tva}%`}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-1.5 ms-2 shrink-0">
+                              <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">{formatTND(item.totalTTC)}</span>
+                              <ChevronRight size={13} className="text-gray-400 rtl:rotate-180" />
+                            </div>
+                          </button>
+                      ))}
                     </div>
                   </div>
 
                   {/* Paiements */}
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Paiements</h3>
-                      {(purchaseDetail?.status !== 'paid') && (
+                    <div className="flex items-center justify-between mb-2 sm:mb-3">
+                      <h3 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">{t('sales.addPayment')}</h3>
+                      {purchaseDetail?.status !== 'paid' && (
                           <button onClick={() => setShowPayment(purchaseDetail || detailPurchase)}
                                   className="text-xs text-green-600 dark:text-green-400 hover:underline flex items-center gap-1">
-                            <Plus size={12} /> Ajouter
+                            <Plus size={12} /> {t('common.create')}
                           </button>
                       )}
                     </div>
                     {(purchaseDetail?.payments || []).length === 0 ? (
-                        <p className="text-sm text-gray-400 text-center py-4 bg-gray-50 dark:bg-gray-800 rounded-xl">Aucun paiement</p>
+                        <div className="text-center py-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                          <p className="text-xs sm:text-sm text-gray-400">{t('common.noData')}</p>
+                        </div>
                     ) : (
                         <div className="space-y-2">
                           {(purchaseDetail?.payments || []).map((p: any) => (
                               <div key={p._id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
                                 <div>
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-sm font-semibold text-gray-900 dark:text-white">{formatTND(p.amount)}</span>
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">{formatTND(p.amount)}</span>
                                     <span className="text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full">
-                              {PAYMENT_METHODS.find(m => m.value === p.method)?.label || p.method}
+                              {t(PAYMENT_METHODS.find(m => m.value === p.method)?.label || '') || p.method}
                             </span>
                                   </div>
                                   <p className="text-xs text-gray-400 mt-0.5">
@@ -580,11 +561,55 @@ const PurchasesPage: React.FC = () => {
 
                   {/* Notes */}
                   {(purchaseDetail?.notes || detailPurchase.notes) && (
-                      <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 rounded-xl p-3">
-                        <p className="text-xs font-medium text-amber-700 dark:text-amber-400 mb-1">Notes</p>
-                        <p className="text-sm text-gray-700 dark:text-gray-300">{purchaseDetail?.notes || detailPurchase.notes}</p>
+                      <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 rounded-xl p-3 sm:p-4">
+                        <p className="text-xs font-medium text-amber-700 dark:text-amber-400 mb-1">{t('common.notes')}</p>
+                        <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">{purchaseDetail?.notes || detailPurchase.notes}</p>
                       </div>
                   )}
+                </div>
+              </div>
+            </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════════
+          PANEL : Détail d'un item
+      ══════════════════════════════════════════════════════════════════ */}
+        {selectedItem && (
+            <div className="fixed inset-0 z-50 flex items-end sm:justify-end" dir={dir}>
+              <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setSelectedItem(null)} />
+              <div className="relative w-full sm:w-auto sm:max-w-md sm:h-full bg-white dark:bg-gray-900 shadow-2xl overflow-y-auto rounded-t-2xl sm:rounded-none max-h-[92vh] sm:max-h-full">
+                <div className="w-10 h-1 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mt-3 sm:hidden" />
+
+                <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-2 mt-1 sm:mt-0">
+                  <button onClick={() => setSelectedItem(null)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                    <ChevronLeft size={17} className="text-gray-500 rtl:rotate-180" />
+                  </button>
+                  <div>
+                    <h2 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{selectedItem.productName}</h2>
+                    <p className="text-xs text-gray-400">{t('products.title')}</p>
+                  </div>
+                </div>
+
+                <div className="p-4 sm:p-6 space-y-0">
+                  {[
+                    { label: t('sales.quantity'),  value: `${selectedItem.quantity}` },
+                    { label: t('sales.unitPrice'), value: formatTND(selectedItem.unitPrice) },
+                    { label: t('products.tva'),    value: `${selectedItem.tva ?? 0} %` },
+                    { label: t('sales.totalHT'),   value: formatTND(selectedItem.totalHT || selectedItem.quantity * selectedItem.unitPrice) },
+                    { label: t('sales.totalTTC'),  value: formatTND(selectedItem.totalTTC || selectedItem.quantity * selectedItem.unitPrice * (1 + (selectedItem.tva || 0) / 100)), bold: true, color: 'text-blue-600 dark:text-blue-400' },
+                  ].map(({ label, value, bold, color }) => (
+                      <div key={label} className="flex items-center justify-between py-3 border-b border-gray-50 dark:border-gray-800 last:border-0">
+                        <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{label}</span>
+                        <span className={`text-xs sm:text-sm ${bold ? 'font-bold' : 'font-semibold'} ${color || 'text-gray-900 dark:text-white'}`}>{value}</span>
+                      </div>
+                  ))}
+                </div>
+
+                <div className="px-4 sm:px-6 pb-5 pt-2">
+                  <button onClick={() => setSelectedItem(null)}
+                          className="w-full py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors">
+                    {t('common.cancel')}
+                  </button>
                 </div>
               </div>
             </div>
