@@ -40,8 +40,8 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 
 // Hardcodé temporairement pour déboguer
-// const API_URL = 'http://192.168.1.176:3001';
-const API_URL = 'https://backenderpnest.onrender.com';
+const API_URL = 'http://localhost:3001';
+// const API_URL = 'https://backenderpnest.onrender.com';
 
 const api = axios.create({
     baseURL: API_URL,

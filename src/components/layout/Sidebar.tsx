@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Truck, Package, ShoppingCart, ShoppingBag,
   Warehouse, FileText, Receipt, UserCog, Calculator, BarChart3,
   Bell, Settings, LogOut, ChevronLeft, ChevronRight,
-  Shield, CreditCard, Sun, Moon, Languages, Check,
+  Shield, Building2, Sun, Moon, Globe, Layers, RotateCcw,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -13,8 +14,11 @@ import { notificationsApi } from '../../api';
 import logo from '../../assets/logo.png';
 import { Lang, useI18n } from '../../context/I18nContext';
 
-// ── Nav items ────────────────────────────────────────────────────────────────
-const userNavItems = [
+// ── Types ─────────────────────────────────────────────────────────────────────
+type UserRole = 'system_admin' | 'admin_company' | 'resource';
+
+// ── Nav items ─────────────────────────────────────────────────────────────────
+const BUSINESS_NAV = [
   { icon: LayoutDashboard, labelKey: 'nav.dashboard',  to: '/dashboard' },
   { icon: Users,           labelKey: 'nav.clients',    to: '/clients' },
   { icon: Truck,           labelKey: 'nav.suppliers',  to: '/suppliers' },
@@ -27,12 +31,13 @@ const userNavItems = [
   { icon: UserCog,         labelKey: 'nav.employees',  to: '/employees' },
   { icon: Calculator,      labelKey: 'nav.accounting', to: '/accounting' },
   { icon: BarChart3,       labelKey: 'nav.reports',    to: '/reports' },
+  { icon: Layers,          labelKey: 'nav.delivery',   to: '/delivery' },
+  { icon: RotateCcw,       labelKey: 'nav.returns',    to: '/returns' },
 ];
 
-const adminNavItems = [
-  { icon: LayoutDashboard, labelKey: 'nav.dashboard',  to: '/dashboard' },
-  { icon: Users,           labelKey: 'nav.clients',    to: '/admin/users' },
-  { icon: CreditCard,      labelKey: 'nav.accounting', to: '/admin/subscriptions' },
+const ADMIN_NAV = [
+  { icon: LayoutDashboard, labelKey: 'nav.admin.dashboard', to: '/admin/dashboard' },
+  { icon: Building2,       labelKey: 'nav.admin.companies', to: '/admin/companies' },
 ];
 
 const LANGS: { code: Lang; flag: string; label: string; native: string }[] = [
@@ -41,34 +46,33 @@ const LANGS: { code: Lang; flag: string; label: string; native: string }[] = [
   { code: 'en', flag: '🇬🇧', label: 'EN', native: 'English' },
 ];
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
 const isMobile = () => window.innerWidth < 768;
+const isSystemAdmin  = (role?: string): boolean => role === 'system_admin';
+const isCompanyAdmin = (role?: string): boolean => role === 'admin_company';
 
-// ── Component ────────────────────────────────────────────────────────────────
+// ── Component ─────────────────────────────────────────────────────────────────
 const Sidebar: React.FC = () => {
   const [collapsed, setCollapsed] = useState(() => isMobile());
-  const [langOpen, setLangOpen]   = useState(false);
 
-  const { user, logout }           = useAuth();
-  const { isDark, toggleTheme }    = useTheme();          // ✅ vrai ThemeContext
-  const { t, lang, setLang }       = useI18n();           // ✅ vrai I18nContext
+  const { user, logout } = useAuth();
+  const { isDark, toggleTheme }   = useTheme();
+  const { t, lang, setLang }      = useI18n();
 
-  const navItems = user?.role === 'admin' ? adminNavItems : userNavItems;
+  const navItems = isSystemAdmin(user?.role) ? ADMIN_NAV : BUSINESS_NAV;
 
-  // Auto-collapse mobile
+  // Auto-collapse on mobile
   useEffect(() => {
     const onResize = () => { if (isMobile()) setCollapsed(true); };
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  // Ferme dropdown si collapsed
-  useEffect(() => { if (collapsed) setLangOpen(false); }, [collapsed]);
-
   const { data: unreadData } = useQuery({
     queryKey: ['notifications-unread'],
     queryFn: notificationsApi.getUnreadCount,
     refetchInterval: 30_000,
-    enabled: user?.role !== 'admin',
+    enabled: !isSystemAdmin(user?.role),
   });
   const unreadCount = unreadData?.count ?? 0;
 
@@ -88,16 +92,27 @@ const Sidebar: React.FC = () => {
           {!collapsed && (
               <div className="min-w-0">
                 <p className="font-bold text-gray-900 dark:text-white text-sm">KY-Pro</p>
-                <p className="text-xs text-gray-400 truncate max-w-[140px]">{user?.businessName || user?.name}</p>
+                <p className="text-xs text-gray-400 truncate max-w-[140px]">
+                  {user?.businessName || user?.name}
+                </p>
               </div>
           )}
         </div>
 
-        {/* ── Admin Badge ── */}
-        {!collapsed && user?.role === 'admin' && (
-            <div className="mx-3 mt-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center gap-2">
-              <Shield size={14} className="text-amber-600" />
-              <span className="text-xs font-medium text-amber-700 dark:text-amber-400">Administrateur</span>
+        {/* ── Role Badge ── */}
+        {!collapsed && (
+            <div className="px-3 pt-2">
+              {isSystemAdmin(user?.role) ? (
+                  <div className="px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center gap-2">
+                    <Shield size={13} className="text-amber-600 dark:text-amber-400" />
+                    <span className="text-xs font-medium text-amber-700 dark:text-amber-400">System Admin</span>
+                  </div>
+              ) : isCompanyAdmin(user?.role) ? (
+                  <div className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg flex items-center gap-2">
+                    <Building2 size={13} className="text-blue-600 dark:text-blue-400" />
+                    <span className="text-xs font-medium text-blue-700 dark:text-blue-400">Admin Entreprise</span>
+                  </div>
+              ) : null}
             </div>
         )}
 
@@ -113,7 +128,7 @@ const Sidebar: React.FC = () => {
                     className={({ isActive }) =>
                         `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                             isActive
-                                ? 'bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400'
+                                ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400'
                                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white'
                         }`
                     }
@@ -128,14 +143,14 @@ const Sidebar: React.FC = () => {
         {/* ── Bottom ── */}
         <div className="border-t border-gray-100 dark:border-gray-800 p-2 space-y-0.5">
 
-          {/* Notifications */}
-          {user?.role !== 'admin' && (
+          {/* Notifications — masquées pour system_admin */}
+          {!isSystemAdmin(user?.role) && (
               <NavLink
                   to="/notifications"
                   title={collapsed ? t('nav.notifications') : undefined}
                   className={({ isActive }) =>
                       `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                          isActive ? 'bg-blue-50 dark:bg-blue-950 text-blue-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900'
+                          isActive ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900'
                       }`
                   }
               >
@@ -157,7 +172,7 @@ const Sidebar: React.FC = () => {
               title={collapsed ? t('nav.settings') : undefined}
               className={({ isActive }) =>
                   `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                      isActive ? 'bg-blue-50 dark:bg-blue-950 text-blue-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900'
+                      isActive ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900'
                   }`
               }
           >
@@ -180,7 +195,6 @@ const Sidebar: React.FC = () => {
                   : <Moon size={18} className="text-indigo-500 group-hover:-rotate-12 transition-transform" />
               }
             </div>
-
             {!collapsed && (
                 <div className="flex items-center justify-between flex-1">
                   <span>{isDark ? 'Mode clair' : 'Mode sombre'}</span>
@@ -194,59 +208,40 @@ const Sidebar: React.FC = () => {
 
           {/* ── Language Selector ── */}
           <div className="relative">
-            <button
-                onClick={() => {
-                  if (collapsed) {
-                    // Mode collapsed : cycle direct entre les 3 langues
-                    const idx  = LANGS.findIndex(l => l.code === lang);
-                    const next = LANGS[(idx + 1) % LANGS.length];
-                    setLang(next.code);
-                  } else {
-                    setLangOpen(o => !o);
-                  }
-                }}
-                title={collapsed ? `${currentLang.flag} ${currentLang.label}` : undefined}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all"
-            >
-              {/* En mode collapsed : affiche le drapeau */}
-              {collapsed
-                  ? <span className="text-base leading-none">{currentLang.flag}</span>
-                  : <Languages size={18} className="flex-shrink-0 text-blue-500" />
-              }
-
-              {!collapsed && (
-                  <div className="flex items-center justify-between flex-1">
-                <span className="flex items-center gap-1.5">
+            {collapsed ? (
+                /* Collapsed: cycle entre les langues au clic */
+                <button
+                    onClick={() => {
+                      const idx  = LANGS.findIndex(l => l.code === lang);
+                      const next = LANGS[(idx + 1) % LANGS.length];
+                      setLang(next.code);
+                    }}
+                    title={`${currentLang.flag} ${currentLang.label}`}
+                    className="w-full flex items-center justify-center px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all"
+                >
                   <span className="text-base leading-none">{currentLang.flag}</span>
-                  <span>{currentLang.native}</span>
-                </span>
-                    <ChevronRight
-                        size={14}
-                        className={`text-gray-400 transition-transform duration-200 ${langOpen ? 'rotate-90' : ''}`}
-                    />
+                </button>
+            ) : (
+                /* Expanded: boutons flag+label compacts */
+                <div className="px-3 py-2">
+                  <div className="flex items-center gap-1">
+                    <Globe size={13} className="text-gray-400 flex-shrink-0" />
+                    <div className="flex gap-1 flex-1 justify-end">
+                      {LANGS.map(l => (
+                          <button
+                              key={l.code}
+                              onClick={() => setLang(l.code)}
+                              className={`px-2 py-0.5 rounded-lg text-xs font-medium transition-colors ${
+                                  lang === l.code
+                                      ? 'bg-blue-600 text-white'
+                                      : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                              }`}
+                          >
+                            {l.flag} {l.label}
+                          </button>
+                      ))}
+                    </div>
                   </div>
-              )}
-            </button>
-
-            {/* Dropdown — seulement en mode expanded */}
-            {!collapsed && langOpen && (
-                <div className="mx-1 mb-1 overflow-hidden rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 shadow-lg">
-                  {LANGS.map(l => (
-                      <button
-                          key={l.code}
-                          onClick={() => { setLang(l.code); setLangOpen(false); }}
-                          className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
-                              lang === l.code
-                                  ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-medium'
-                                  : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800'
-                          }`}
-                      >
-                        <span className="text-base leading-none w-5">{l.flag}</span>
-                        <span className="flex-1 text-left">{l.native}</span>
-                        <span className="text-xs text-gray-400 dark:text-gray-600">{l.label}</span>
-                        {lang === l.code && <Check size={13} className="text-blue-500 flex-shrink-0" />}
-                      </button>
-                  ))}
                 </div>
             )}
           </div>

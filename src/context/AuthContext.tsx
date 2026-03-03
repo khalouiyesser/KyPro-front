@@ -5,7 +5,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'user';
+  role: 'system_admin' | 'admin_company' | 'resource'; // ✅ Aligné avec le backend
   mustChangePassword: boolean;
   theme: string;
   primaryColor: string;

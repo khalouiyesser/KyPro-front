@@ -36,12 +36,7 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
 root.render(
     <React.StrictMode>
         {/*
-      ⚠️ ORDRE CRITIQUE DES PROVIDERS :
-      1. QueryClientProvider  — doit être le plus haut
-      2. AuthProvider         — gère l'auth (ThemeContext en dépend pour user.theme)
-      3. ThemeProvider        — dépend de AuthContext pour user.theme
-      4. I18nProvider         — doit être AVANT App pour que useI18n() fonctionne partout
-      5. App                  — tous les hooks sont maintenant disponibles
+
     */}
         <QueryClientProvider client={queryClient}>
             <AuthProvider>

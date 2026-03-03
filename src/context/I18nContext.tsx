@@ -118,7 +118,12 @@ const translations: Record<Lang, Record<string, string>> = {
     'dashboard.belowThreshold':             'Produits sous le seuil',
     'dashboard.last10Transactions':         '10 dernières transactions',
     'dashboard.noSales':                    'Aucune vente',
-
+    'nav.delivery': 'Livraisons',
+    'nav.returns': 'Retours',
+    'nav.admin.dashboard': 'Tableau de bord',
+    'nav.admin.companies': 'Entreprises',
+    'settings.dark': 'Mode sombre',
+    'settings.light': 'Mode clair',
     // Clients
     'clients.title': 'Clients',
     'clients.new': 'Nouveau client',
@@ -314,6 +319,14 @@ const translations: Record<Lang, Record<string, string>> = {
     'dashboard.belowThreshold':             'Products below threshold',
     'dashboard.last10Transactions':         'Last 10 transactions',
     'dashboard.noSales':                    'No sales',
+
+    'nav.delivery': 'Deliveries',
+    'nav.returns': 'Returns',
+    'nav.admin.dashboard': 'Dashboard',
+    'nav.admin.companies': 'Companies',
+    'settings.dark': 'Dark mode',
+    'settings.light': 'Light mode',
+
 
     'clients.title': 'Clients',
     'clients.new': 'New Client',
@@ -566,6 +579,12 @@ const translations: Record<Lang, Record<string, string>> = {
     'error.stockInsuffisant': 'المخزون غير كافٍ',
     'error.required': 'هذا الحقل مطلوب',
     'error.generic': 'حدث خطأ',
+    'nav.delivery': 'التوصيلات',
+    'nav.returns': 'المرتجعات',
+    'nav.admin.dashboard': 'لوحة التحكم',
+    'nav.admin.companies': 'الشركات',
+    'settings.dark': 'الوضع الداكن',
+    'settings.light': 'الوضع الفاتح',
   },
 };
 
