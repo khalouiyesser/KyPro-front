@@ -134,10 +134,23 @@ export const clientsApi = {
   ...createCrudApi('clients'),
   getOne:       (id: string)                         => api.get(`/clients/${id}`).then(r => r.data),
   getStats:     (id: string)                         => api.get(`/clients/${id}/stats`).then(r => r.data),
-  addPayment:   (idUser: string, idClient: string)   => api.post(`/clients/${idUser}/payment/${idClient}`).then(r => r.data),
+  addPayment: (clientId: string, data: { amount: number; note?: string }) =>
+      api.post(`/clients/payment/${clientId}`, data).then(r => r.data),
   getPurchases: (id: string, params?: any)           => api.get(`/clients/${id}/purchases`, { params }).then(r => r.data),
   exportBilan:  (id: string, params?: any)           => api.get(`/clients/${id}/export`, { params, responseType: 'blob' }).then(r => r.data),
 };
+
+//payment ventes
+export const paymentVenteApi = {
+  getAll:  () =>
+      api.get('/payment-vente').then(r => r.data),
+  update:  (id: string, data: { amount?: number; note?: string }) =>
+      api.patch(`/payment-vente/${id}`, data).then(r => r.data),
+  remove:  (id: string) =>
+      api.delete(`/payment-vente/${id}`).then(r => r.data),
+};
+
+
 
 // ── Fournisseurs ──────────────────────────────────────────────────────────────
 export const suppliersApi = {

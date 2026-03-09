@@ -40,12 +40,12 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 
 
-const API_URL = 'https://backenderpnest.onrender.com';
+const API_URL = 'http://localhost:3001';
 
 const api = axios.create({
     baseURL: API_URL,
     headers: { 'Content-Type': 'application/json' },
-    timeout: 10000,
+    timeout: 100000,
 });
 
 api.interceptors.request.use((config) => {
