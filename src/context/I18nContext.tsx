@@ -185,6 +185,19 @@ const translations: Record<Lang, Record<string, string>> = {
     'stock.in': 'Entrée',
     'stock.out': 'Sortie',
     'stock.adjustment': 'Ajustement',
+    'stock.quantity':       'Quantité',
+    'stock.threshold':      'Seuil alerte',
+    'stock.normal':         'Normal',
+    'stock.before':         'Avant',
+    'stock.after':          'Après',
+    'stock.source':         'Source',
+    'stock.stockProducts':  'Produits & Stock',
+    'stock.editThreshold':  'Modifier seuil',
+    'stock.thresholdSaved': 'Seuil mis à jour',
+    'stock.thresholdHint':  'Une alerte s\'affichera quand le stock descend sous ce seuil.',
+    'stock.quantityHint':   'Quantité (positif = entrée, négatif = sortie)',
+    'stock.productsLowStock': 'produits en stock bas',
+    'common.type':          'Type',
 
     // Notifications
     'notifications.title': 'Notifications',
@@ -201,6 +214,8 @@ const translations: Record<Lang, Record<string, string>> = {
     'reports.charges': 'Rapport Charges',
     'reports.exportPdf': 'Exporter PDF',
     'reports.exportExcel': 'Exporter Excel',
+
+    "suppliers.new": "Nouveau fournisseur",
 
     // Auth
     'auth.login': 'Connexion',
@@ -400,6 +415,22 @@ const translations: Record<Lang, Record<string, string>> = {
     'error.stockInsuffisant': 'Insufficient stock',
     'error.required': 'This field is required',
     'error.generic': 'An error occurred',
+
+    'stock.quantity':       'Quantity',
+    'stock.threshold':      'Alert threshold',
+    'stock.normal':         'Normal',
+    'stock.before':         'Before',
+    'stock.after':          'After',
+    'stock.source':         'Source',
+    'stock.stockProducts':  'Products & Stock',
+    'stock.editThreshold':  'Edit threshold',
+    'stock.thresholdSaved': 'Threshold updated',
+    'stock.thresholdHint':  'An alert will appear when stock falls below this threshold.',
+    'stock.quantityHint':   'Quantity (positive = in, negative = out)',
+    'stock.productsLowStock': 'products with low stock',
+    'common.type':          'Type',
+    "suppliers.new": "New supplier",
+
   },
 
   // ─── ARABIC ─────────────────────────────────────────────────────────────────
@@ -507,6 +538,10 @@ const translations: Record<Lang, Record<string, string>> = {
     'dashboard.last10Transactions':         'آخر 10 معاملات',
     'dashboard.noSales':                    'لا توجد مبيعات',
 
+    "suppliers.new": "مورد جديد",
+
+
+
     'clients.title': 'العملاء',
     'clients.new': 'عميل جديد',
     'clients.edit': 'تعديل العميل',
@@ -585,6 +620,20 @@ const translations: Record<Lang, Record<string, string>> = {
     'nav.admin.companies': 'الشركات',
     'settings.dark': 'الوضع الداكن',
     'settings.light': 'الوضع الفاتح',
+
+    'stock.quantity':       'الكمية',
+    'stock.threshold':      'حد التنبيه',
+    'stock.normal':         'عادي',
+    'stock.before':         'قبل',
+    'stock.after':          'بعد',
+    'stock.source':         'المصدر',
+    'stock.stockProducts':  'المنتجات والمخزون',
+    'stock.editThreshold':  'تعديل الحد',
+    'stock.thresholdSaved': 'تم تحديث الحد',
+    'stock.thresholdHint':  'سيظهر تنبيه عندما ينخفض المخزون عن هذا الحد.',
+    'stock.quantityHint':   'الكمية (موجب = دخول، سالب = خروج)',
+    'stock.productsLowStock': 'منتجات بمخزون منخفض',
+    'common.type':          'النوع',
   },
 };
 

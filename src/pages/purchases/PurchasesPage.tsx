@@ -26,13 +26,15 @@ const PurchasesPage: React.FC = () => {
   const { state: confirmState, confirm, proceed, cancel } = useConfirmDialog();
   const { t, dir } = useI18n();
 
-  const [showForm,        setShowForm]        = useState(false);
-  const [showPayment,     setShowPayment]     = useState<any>(null);
-  const [detailPurchase,  setDetailPurchase]  = useState<any>(null);
-  const [selectedItem,    setSelectedItem]    = useState<any>(null);
-  const [payAmount,       setPayAmount]       = useState('');
-  const [payMethod,       setPayMethod]       = useState('cash');
-  const [payNote,         setPayNote]         = useState('');
+  const [showForm,             setShowForm]             = useState(false);
+  const [showPayment,          setShowPayment]          = useState<any>(null);
+  const [detailPurchase,       setDetailPurchase]       = useState<any>(null);
+  const [selectedItem,         setSelectedItem]         = useState<any>(null);
+  const [payAmount,            setPayAmount]            = useState('');
+  const [payMethod,            setPayMethod]            = useState('cash');
+  const [payNote,              setPayNote]              = useState('');
+  const [showAddSupplierForm,  setShowAddSupplierForm]  = useState(false);
+  const [newSupplierForm,      setNewSupplierForm]      = useState({ name: '', phone: '+216' });
 
   const emptyItem = () => ({ productId: '', productName: '', quantity: 1, unitPrice: 0, tva: 19 });
   const [form, setForm] = useState({
@@ -124,6 +126,18 @@ const PurchasesPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['purchase-detail'] });
       toast.success(t('common.delete'));
     },
+  });
+
+  const createSupplierMut = useMutation({
+    mutationFn: suppliersApi.create,
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['suppliers'] });
+      setForm(f => ({ ...f, FournisseurId: data._id, items: [emptyItem()] }));
+      setShowAddSupplierForm(false);
+      setNewSupplierForm({ name: '', phone: '+216' });
+      toast.success(t('suppliers.new'));
+    },
+    onError: (err: any) => toast.error(err?.response?.data?.message || t('error.generic')),
   });
 
   /* ── Handlers ────────────────────────────────────────────────────────── */
@@ -243,8 +257,8 @@ const PurchasesPage: React.FC = () => {
         />
 
         {/* ══════════════════════════════════════════════════════════════════
-          MODAL : Nouvel achat — bottom sheet mobile
-      ══════════════════════════════════════════════════════════════════ */}
+            MODAL : Nouvel achat — bottom sheet mobile
+        ══════════════════════════════════════════════════════════════════ */}
         {showForm && (
             <div className="fixed inset-0 z-40 flex items-end sm:items-center justify-center">
               <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowForm(false)} />
@@ -264,17 +278,26 @@ const PurchasesPage: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       {t('nav.suppliers')} <span className="text-red-500">*</span>
                     </label>
-                    <select
-                        required
-                        value={form.FournisseurId}
-                        onChange={e => setForm(f => ({ ...f, FournisseurId: e.target.value, items: [emptyItem()] }))}
-                        className={inp}
-                    >
-                      <option value="">{t('common.search')}</option>
-                      {(suppliers as any[]).map((s: any) => (
-                          <option key={s._id} value={s._id}>{s.name} — {s.phone}</option>
-                      ))}
-                    </select>
+                    <div className="flex gap-2">
+                      <select
+                          required
+                          value={form.FournisseurId}
+                          onChange={e => setForm(f => ({ ...f, FournisseurId: e.target.value, items: [emptyItem()] }))}
+                          className={inp + ' flex-1'}
+                      >
+                        <option value="">{t('common.search')}</option>
+                        {(suppliers as any[]).map((s: any) => (
+                            <option key={s._id} value={s._id}>{s.name} — {s.phone}</option>
+                        ))}
+                      </select>
+                      <button
+                          type="button"
+                          onClick={() => setShowAddSupplierForm(true)}
+                          className="px-3 py-2 border border-dashed border-blue-400 text-blue-600 dark:text-blue-400 rounded-xl text-xs sm:text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 whitespace-nowrap transition-colors"
+                      >
+                        + {t('suppliers.new')}
+                      </button>
+                    </div>
                     {form.FournisseurId && supplierProducts.length === 0 && (
                         <p className="text-xs text-amber-600 dark:text-amber-400 mt-1.5">
                           ⚠️ {t('common.noData')}
@@ -285,9 +308,9 @@ const PurchasesPage: React.FC = () => {
                   {/* Lignes produits */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t('products.title')} <span className="text-red-500">*</span>
-                  </span>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {t('products.title')} <span className="text-red-500">*</span>
+                      </span>
                       <button type="button" onClick={() => setForm(f => ({ ...f, items: [...f.items, emptyItem()] }))}
                               className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
                         <Plus size={11} /> {t('sales.addProduct')}
@@ -367,8 +390,8 @@ const PurchasesPage: React.FC = () => {
                       {form.initialPayment > 0 && (
                           <p className="text-xs text-gray-400 mt-1">
                             {t('sales.remaining')} : <span className={totalTTC - form.initialPayment > 0 ? 'text-red-500 font-medium' : 'text-green-500 font-medium'}>
-                        {formatTND(Math.max(0, totalTTC - form.initialPayment))}
-                      </span>
+                              {formatTND(Math.max(0, totalTTC - form.initialPayment))}
+                            </span>
                           </p>
                       )}
                     </div>
@@ -400,8 +423,66 @@ const PurchasesPage: React.FC = () => {
         )}
 
         {/* ══════════════════════════════════════════════════════════════════
-          MODAL : Ajouter un paiement
-      ══════════════════════════════════════════════════════════════════ */}
+            MODAL : Nouveau fournisseur rapide
+        ══════════════════════════════════════════════════════════════════ */}
+        {showAddSupplierForm && (
+            <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowAddSupplierForm(false)} />
+              <div className="relative bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-sm mx-0 sm:mx-4 p-5 sm:p-6">
+                <div className="w-10 h-1 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-4 sm:hidden" />
+                <button onClick={() => setShowAddSupplierForm(false)} className="absolute top-4 right-4 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+                  <X size={18} />
+                </button>
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('suppliers.new')}</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('common.name')} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                        value={newSupplierForm.name}
+                        onChange={e => setNewSupplierForm(f => ({ ...f, name: e.target.value }))}
+                        placeholder={t('common.optional')}
+                        className={inp}
+                        autoFocus
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('common.phone')} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                        value={newSupplierForm.phone}
+                        onChange={e => setNewSupplierForm(f => ({ ...f, phone: e.target.value }))}
+                        pattern="^\+216[0-9]{8}$"
+                        className={inp}
+                    />
+                  </div>
+                  <div className="flex gap-3 pt-1">
+                    <button
+                        type="button"
+                        onClick={() => setShowAddSupplierForm(false)}
+                        className="flex-1 px-4 py-2.5 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      {t('common.cancel')}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => { if (newSupplierForm.name && newSupplierForm.phone) createSupplierMut.mutate(newSupplierForm as any); }}
+                        disabled={!newSupplierForm.name || createSupplierMut.isPending}
+                        className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl text-sm font-medium transition-colors"
+                    >
+                      {createSupplierMut.isPending ? t('common.loading') : t('common.create')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════════
+            MODAL : Ajouter un paiement
+        ══════════════════════════════════════════════════════════════════ */}
         {showPayment && (
             <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
               <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowPayment(null)} />
@@ -444,8 +525,8 @@ const PurchasesPage: React.FC = () => {
         )}
 
         {/* ══════════════════════════════════════════════════════════════════
-          DRAWER : Détail d'un achat
-      ══════════════════════════════════════════════════════════════════ */}
+            DRAWER : Détail d'un achat
+        ══════════════════════════════════════════════════════════════════ */}
         {detailPurchase && (
             <div className="fixed inset-0 z-40 flex items-end sm:justify-end" dir={dir}>
               <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setDetailPurchase(null); setSelectedItem(null); }} />
@@ -541,8 +622,8 @@ const PurchasesPage: React.FC = () => {
                                   <div className="flex items-center gap-2 flex-wrap">
                                     <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">{formatTND(p.amount)}</span>
                                     <span className="text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full">
-                              {t(PAYMENT_METHODS.find(m => m.value === p.method)?.label || '') || p.method}
-                            </span>
+                                      {t(PAYMENT_METHODS.find(m => m.value === p.method)?.label || '') || p.method}
+                                    </span>
                                   </div>
                                   <p className="text-xs text-gray-400 mt-0.5">
                                     {p.date ? format(new Date(p.date), 'dd/MM/yyyy HH:mm') : '—'}
@@ -572,8 +653,8 @@ const PurchasesPage: React.FC = () => {
         )}
 
         {/* ══════════════════════════════════════════════════════════════════
-          PANEL : Détail d'un item
-      ══════════════════════════════════════════════════════════════════ */}
+            PANEL : Détail d'un item
+        ══════════════════════════════════════════════════════════════════ */}
         {selectedItem && (
             <div className="fixed inset-0 z-50 flex items-end sm:justify-end" dir={dir}>
               <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setSelectedItem(null)} />
