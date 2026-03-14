@@ -88,7 +88,8 @@ export const stockApi = {
 /* ── Devis ───────────────────────────────────────────────────────────────────*/
 export const quotesApi = {
   ...createCrudApi('quotes'),
-  getInvoice: (id: string) => api.get(`/quotes/${id}/pdf`, { responseType: 'blob' }).then(r => r.data),
+  getInvoice: (id: string) =>
+      api.get(`/quotes/${id}/export/pdf`, { responseType: 'blob' }).then(r => r.data),
 };
 
 /* ── Charges ─────────────────────────────────────────────────────────────────*/
