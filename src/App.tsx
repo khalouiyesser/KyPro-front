@@ -5,10 +5,12 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { I18nProvider } from './context/I18nContext';
-import Layout from './components/layout/Layout';
-import LoginPage from './pages/auth/LoginPage';
+import Layout             from './components/layout/Layout';
+import LoginPage          from './pages/auth/LoginPage';
 import ChangePasswordPage from './pages/auth/ChangePasswordPage';
+import ForgotPasswordPage from "./pages/auth/Forgotpasswordpage";
 
+// ── Lazy pages ────────────────────────────────────────────────────────────────
 const DashboardPage          = lazy(() => import('./pages/dashboard/DashboardPage'));
 const ClientsPage            = lazy(() => import('./pages/clients/ClientsPage'));
 const ClientDetailPage       = lazy(() => import('./pages/clients/ClientDetailPage'));
@@ -29,17 +31,22 @@ const AdminUsersPage         = lazy(() => import('./pages/admin/AdminUsersPage')
 const AdminSubscriptionsPage = lazy(() => import('./pages/admin/AdminSubscriptionsPage'));
 const AdminCompaniesPage     = lazy(() => import('./pages/admin/AdminCompaniesPage'));
 const AddCompanyPage         = lazy(() => import('./pages/admin/AddCompanyPage'));
+// const DeliveryPage           = lazy(() => import('./pages/delivery/DeliveryPage'));
+// const ReturnsPage            = lazy(() => import('./pages/returns/ReturnsPage'));
 
+// ── QueryClient ───────────────────────────────────────────────────────────────
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 1000 * 30 } },
 });
 
+// ── Spinner ───────────────────────────────────────────────────────────────────
 const Spinner = () => (
     <div className="flex items-center justify-center h-64">
       <div className="w-6 h-6 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
     </div>
 );
 
+// ── Route guards ──────────────────────────────────────────────────────────────
 const ProtectedRoutes: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
   if (isLoading) return (
@@ -61,6 +68,7 @@ const SystemAdminRoute: React.FC<{ children: React.ReactNode }> = ({ children })
   return <>{children}</>;
 };
 
+// ── App ───────────────────────────────────────────────────────────────────────
 const App: React.FC = () => (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
@@ -69,11 +77,19 @@ const App: React.FC = () => (
             <I18nProvider>
               <Toaster
                   position="top-right"
-                  toastOptions={{ className: 'dark:bg-gray-800 dark:text-white text-sm', duration: 3000 }}
+                  toastOptions={{
+                    className: 'dark:bg-gray-800 dark:text-white text-sm',
+                    duration: 3000,
+                  }}
               />
               <Routes>
+
+                {/* ── Routes publiques (sans authentification) ── */}
                 <Route path="/login"           element={<LoginPage />} />
                 <Route path="/change-password" element={<ChangePasswordPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+
+                {/* ── Routes protégées ── */}
                 <Route path="/" element={<ProtectedRoutes />}>
                   <Route index element={<Navigate to="/dashboard" replace />} />
                   <Route path="dashboard"             element={<DashboardPage />} />
@@ -92,13 +108,23 @@ const App: React.FC = () => (
                   <Route path="reports"               element={<ReportsPage />} />
                   <Route path="settings"              element={<SettingsPage />} />
                   <Route path="notifications"         element={<NotificationsPage />} />
-                  {/* ── System Admin ── */}
-                  <Route path="admin/users"         element={<SystemAdminRoute><AdminUsersPage /></SystemAdminRoute>} />
-                  <Route path="admin/subscriptions" element={<SystemAdminRoute><AdminSubscriptionsPage /></SystemAdminRoute>} />
-                  <Route path="admin/companies"     element={<SystemAdminRoute><AdminCompaniesPage /></SystemAdminRoute>} />
-                  <Route path="admin/companies/new" element={<SystemAdminRoute><AddCompanyPage /></SystemAdminRoute>} />
+                  {/*<Route path="delivery"              element={<DeliveryPage />} />*/}
+                  {/*<Route path="returns"               element={<ReturnsPage />} />*/}
+
+                  {/* ── System Admin uniquement ── */}
+                  <Route path="admin/users"
+                         element={<SystemAdminRoute><AdminUsersPage /></SystemAdminRoute>} />
+                  <Route path="admin/subscriptions"
+                         element={<SystemAdminRoute><AdminSubscriptionsPage /></SystemAdminRoute>} />
+                  <Route path="admin/companies"
+                         element={<SystemAdminRoute><AdminCompaniesPage /></SystemAdminRoute>} />
+                  <Route path="admin/companies/new"
+                         element={<SystemAdminRoute><AddCompanyPage /></SystemAdminRoute>} />
                 </Route>
+
+                {/* ── Fallback ── */}
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
+
               </Routes>
             </I18nProvider>
           </ThemeProvider>
