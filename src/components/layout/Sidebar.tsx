@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
@@ -14,10 +13,8 @@ import { notificationsApi } from '../../api';
 import logo from '../../assets/logo.png';
 import { Lang, useI18n } from '../../context/I18nContext';
 
-// ── Types ─────────────────────────────────────────────────────────────────────
 type UserRole = 'system_admin' | 'admin_company' | 'resource';
 
-// ── Nav items ─────────────────────────────────────────────────────────────────
 const BUSINESS_NAV = [
   { icon: LayoutDashboard, labelKey: 'nav.dashboard',  to: '/dashboard' },
   { icon: Users,           labelKey: 'nav.clients',    to: '/clients' },
@@ -30,9 +27,9 @@ const BUSINESS_NAV = [
   { icon: Receipt,         labelKey: 'nav.charges',    to: '/charges' },
   { icon: UserCog,         labelKey: 'nav.employees',  to: '/employees' },
   { icon: Calculator,      labelKey: 'nav.accounting', to: '/accounting' },
-  { icon: BarChart3,       labelKey: 'nav.reports',    to: '/reports' },
-  { icon: Layers,          labelKey: 'nav.delivery',   to: '/delivery' },
-  { icon: RotateCcw,       labelKey: 'nav.returns',    to: '/returns' },
+  // { icon: BarChart3,       labelKey: 'nav.reports',    to: '/reports' },
+  // { icon: Layers,          labelKey: 'nav.delivery',   to: '/delivery' },
+  // { icon: RotateCcw,       labelKey: 'nav.returns',    to: '/returns' },
 ];
 
 const ADMIN_NAV = [
@@ -46,22 +43,35 @@ const LANGS: { code: Lang; flag: string; label: string; native: string }[] = [
   { code: 'en', flag: '🇬🇧', label: 'EN', native: 'English' },
 ];
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-const isMobile = () => window.innerWidth < 768;
-const isSystemAdmin  = (role?: string): boolean => role === 'system_admin';
-const isCompanyAdmin = (role?: string): boolean => role === 'admin_company';
+const isMobile        = () => window.innerWidth < 768;
+const isSystemAdmin   = (role?: string) => role === 'system_admin';
+const isCompanyAdmin  = (role?: string) => role === 'admin_company';
+
+// ── Toggle switch interne — dimensions pixel exactes ──────────────────────────
+// Conteneur : 44×24px  |  Bouton : 18×18px
+// OFF → left: 3px  |  ON → left: 23px
+const MiniToggle: React.FC<{ on: boolean }> = ({ on }) => (
+    <div
+        style={{ width: '44px', height: '24px', flexShrink: 0 }}
+        className={`relative rounded-full transition-colors duration-300 ${on ? 'bg-indigo-500' : 'bg-gray-200 dark:bg-gray-700'}`}
+    >
+    <span
+        style={{ width: '18px', height: '18px', top: '3px', left: on ? '23px' : '3px' }}
+        className="absolute bg-white rounded-full shadow transition-all duration-300"
+    />
+    </div>
+);
 
 // ── Component ─────────────────────────────────────────────────────────────────
 const Sidebar: React.FC = () => {
   const [collapsed, setCollapsed] = useState(() => isMobile());
 
-  const { user, logout } = useAuth();
-  const { isDark, toggleTheme }   = useTheme();
-  const { t, lang, setLang }      = useI18n();
+  const { user, logout }        = useAuth();
+  const { isDark, toggleTheme } = useTheme();
+  const { t, lang, setLang }    = useI18n();
 
   const navItems = isSystemAdmin(user?.role) ? ADMIN_NAV : BUSINESS_NAV;
 
-  // Auto-collapse on mobile
   useEffect(() => {
     const onResize = () => { if (isMobile()) setCollapsed(true); };
     window.addEventListener('resize', onResize);
@@ -70,7 +80,7 @@ const Sidebar: React.FC = () => {
 
   const { data: unreadData } = useQuery({
     queryKey: ['notifications-unread'],
-    queryFn: notificationsApi.getUnreadCount,
+    queryFn:  notificationsApi.getUnreadCount,
     refetchInterval: 30_000,
     enabled: !isSystemAdmin(user?.role),
   });
@@ -143,7 +153,7 @@ const Sidebar: React.FC = () => {
         {/* ── Bottom ── */}
         <div className="border-t border-gray-100 dark:border-gray-800 p-2 space-y-0.5">
 
-          {/* Notifications — masquées pour system_admin */}
+          {/* Notifications */}
           {!isSystemAdmin(user?.role) && (
               <NavLink
                   to="/notifications"
@@ -180,7 +190,6 @@ const Sidebar: React.FC = () => {
             {!collapsed && <span>{t('nav.settings')}</span>}
           </NavLink>
 
-          {/* ── Divider ── */}
           <div className="h-px bg-gray-100 dark:bg-gray-800 !my-2" />
 
           {/* ── Theme Toggle ── */}
@@ -191,17 +200,15 @@ const Sidebar: React.FC = () => {
           >
             <div className="flex-shrink-0">
               {isDark
-                  ? <Sun size={18} className="text-amber-400 group-hover:rotate-12 transition-transform" />
+                  ? <Sun  size={18} className="text-amber-400 group-hover:rotate-12 transition-transform" />
                   : <Moon size={18} className="text-indigo-500 group-hover:-rotate-12 transition-transform" />
               }
             </div>
             {!collapsed && (
                 <div className="flex items-center justify-between flex-1">
                   <span>{isDark ? 'Mode clair' : 'Mode sombre'}</span>
-                  {/* Toggle switch */}
-                  <div className={`w-9 h-5 rounded-full transition-colors duration-300 relative flex-shrink-0 ${isDark ? 'bg-indigo-500' : 'bg-gray-200 dark:bg-gray-700'}`}>
-                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300 ${isDark ? 'translate-x-4' : 'translate-x-0.5'}`} />
-                  </div>
+                  {/* ✅ Toggle corrigé — dimensions pixel exactes */}
+                  <MiniToggle on={isDark} />
                 </div>
             )}
           </button>
@@ -209,7 +216,6 @@ const Sidebar: React.FC = () => {
           {/* ── Language Selector ── */}
           <div className="relative">
             {collapsed ? (
-                /* Collapsed: cycle entre les langues au clic */
                 <button
                     onClick={() => {
                       const idx  = LANGS.findIndex(l => l.code === lang);
@@ -222,7 +228,6 @@ const Sidebar: React.FC = () => {
                   <span className="text-base leading-none">{currentLang.flag}</span>
                 </button>
             ) : (
-                /* Expanded: boutons flag+label compacts */
                 <div className="px-3 py-2">
                   <div className="flex items-center gap-1">
                     <Globe size={13} className="text-gray-400 flex-shrink-0" />
@@ -246,7 +251,6 @@ const Sidebar: React.FC = () => {
             )}
           </div>
 
-          {/* ── Divider ── */}
           <div className="h-px bg-gray-100 dark:bg-gray-800 !my-2" />
 
           {/* Logout */}
